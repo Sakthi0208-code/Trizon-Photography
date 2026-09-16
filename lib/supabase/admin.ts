@@ -1,16 +1,37 @@
 import { createClient } from "@supabase/supabase-js";
 
-export function createAdminClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseSecretKey = process.env.SUPABASE_SECRET_KEY;
+function getSupabaseConfig() {
+  const supabaseUrl =
+    process.env.NEXT_PUBLIC_SUPABASE_URL ??
+    process.env.SUPABASE_URL;
+
+  const supabaseSecretKey =
+    process.env.SUPABASE_SECRET_KEY ??
+    process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!supabaseUrl) {
-    throw new Error("NEXT_PUBLIC_SUPABASE_URL is missing");
+    throw new Error(
+      "Supabase project URL is missing."
+    );
   }
 
   if (!supabaseSecretKey) {
-    throw new Error("SUPABASE_SECRET_KEY is missing");
+    throw new Error(
+      "Supabase secret key is missing."
+    );
   }
+
+  return {
+    supabaseUrl,
+    supabaseSecretKey,
+  };
+}
+
+export function createAdminClient() {
+  const {
+    supabaseUrl,
+    supabaseSecretKey,
+  } = getSupabaseConfig();
 
   return createClient(
     supabaseUrl,
