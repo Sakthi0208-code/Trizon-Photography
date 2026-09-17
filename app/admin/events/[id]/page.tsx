@@ -3,10 +3,14 @@ import { notFound, redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import EventDeleteButton from "@/components/event-delete-button";
 
 type PageProps = {
   params: Promise<{
     id: string;
+  }>;
+  searchParams?: Promise<{
+    error?: string;
   }>;
 };
 
@@ -36,8 +40,17 @@ type Gallery = {
 
 export default async function AdminEventDetailsPage({
   params,
+  searchParams,
 }: PageProps) {
   const { id } = await params;
+
+  const query = searchParams
+    ? await searchParams
+    : {};
+
+  // =========================================================
+  // AUTHENTICATION
+  // =========================================================
 
   const supabase = await createClient();
 
@@ -49,6 +62,10 @@ export default async function AdminEventDetailsPage({
     redirect("/login");
   }
 
+  // =========================================================
+  // ADMIN CHECK
+  // =========================================================
+
   const { data: profile } = await supabase
     .from("profiles")
     .select("full_name, role")
@@ -58,6 +75,10 @@ export default async function AdminEventDetailsPage({
   if (!profile || profile.role !== "ADMIN") {
     redirect("/team-member");
   }
+
+  // =========================================================
+  // ADMIN CLIENT
+  // =========================================================
 
   const admin = createAdminClient();
 
@@ -213,7 +234,8 @@ export default async function AdminEventDetailsPage({
   if (galleries.length > 0) {
     const galleryIds =
       galleries.map(
-        (gallery) => gallery.id
+        (gallery) =>
+          gallery.id
       );
 
     const { count } =
@@ -251,15 +273,15 @@ export default async function AdminEventDetailsPage({
         !gallery.published
     ).length;
 
+  // =========================================================
+  // WORKFLOW
+  // =========================================================
+
   const photosUploaded =
     totalPhotos > 0;
 
   const photosCurated =
     selectedPhotoCount > 0;
-
-  // =========================================================
-  // WORKFLOW
-  // =========================================================
 
   let workflowProgress = 25;
 
@@ -310,6 +332,10 @@ export default async function AdminEventDetailsPage({
       )
     );
 
+  // =========================================================
+  // PAGE
+  // =========================================================
+
   return (
     <main className="min-h-screen bg-[#07090c] text-white">
       <div className="mx-auto max-w-7xl px-6 py-10 lg:px-8">
@@ -324,6 +350,16 @@ export default async function AdminEventDetailsPage({
         >
           ← Back to events
         </Link>
+
+        {/* ===================================================
+            DELETE ERROR
+        ==================================================== */}
+
+        {query.error && (
+          <div className="mt-5 rounded-xl border border-red-500/20 bg-red-500/[0.06] px-4 py-3 text-sm text-red-400">
+            {query.error}
+          </div>
+        )}
 
         {/* ===================================================
             HEADER
@@ -368,17 +404,22 @@ export default async function AdminEventDetailsPage({
 
             <Link
               href={`/admin/events/${event.id}/photos`}
-              className="rounded-xl border border-white/10 px-5 py-3 text-sm text-zinc-300 hover:border-white/20 hover:text-white"
+              className="rounded-xl border border-white/10 px-5 py-3 text-sm text-zinc-300 transition hover:border-white/20 hover:text-white"
             >
               Review Photos
             </Link>
 
             <Link
               href={`/admin/events/${event.id}/gallery/create`}
-              className="rounded-xl bg-white px-5 py-3 text-sm font-semibold text-black hover:bg-zinc-200"
+              className="rounded-xl bg-white px-5 py-3 text-sm font-semibold text-black transition hover:bg-zinc-200"
             >
               + Create Gallery
             </Link>
+
+            <EventDeleteButton
+              eventId={event.id}
+              eventName={event.name}
+            />
 
           </div>
 
@@ -541,12 +582,14 @@ export default async function AdminEventDetailsPage({
           </div>
 
           <div className="mt-4 h-1 overflow-hidden rounded-full bg-white/10">
+
             <div
               className="h-full bg-white"
               style={{
                 width: `${workflowProgress}%`,
               }}
             />
+
           </div>
 
         </section>
@@ -704,6 +747,7 @@ export default async function AdminEventDetailsPage({
                     </div>
 
                     {/* PIN */}
+
                     <div className="mt-5 rounded-2xl border border-yellow-500/15 bg-yellow-500/[0.035] p-5">
 
                       <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-yellow-500/70">
@@ -718,6 +762,7 @@ export default async function AdminEventDetailsPage({
                     </div>
 
                     {/* URL */}
+
                     <div className="mt-4 rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
 
                       <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-700">
@@ -732,6 +777,7 @@ export default async function AdminEventDetailsPage({
                     </div>
 
                     {/* Actions */}
+
                     <div className="mt-5 flex flex-wrap gap-2">
 
                       <Link
