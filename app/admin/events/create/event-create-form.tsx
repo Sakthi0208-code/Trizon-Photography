@@ -140,7 +140,7 @@ export default function EventCreateForm({
               name="name"
               type="text"
               required
-              placeholder="e.g. Arjun & Priya Wedding"
+              placeholder="e.g. Sakthi & Kaviya Event"
               className="mt-2 w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-sm text-white outline-none placeholder:text-zinc-700 focus:border-white/30"
             />
           </div>

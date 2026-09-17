@@ -163,7 +163,7 @@ export default async function CreateEventPage({
         ==================================================== */}
 
         <form
-          action="/api/admin/events/create"
+          action="/api/events/create"
           method="POST"
           className="mt-8 space-y-6"
         >
